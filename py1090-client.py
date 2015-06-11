@@ -57,7 +57,10 @@ while True:
         #Except for #11, which had the raw address.
         if modesType == 11:
             addr = ord(msgPlane[1]) << 16 | ord(msgPlane[2]) << 8 | ord(msgPlane[3])
+            
             print "Address: %s Signal: %d.1" % (hex(addr)[2:], rssi)
+            if hex(addr)[2:] == 0xa5106e:
+                print "Look"
         
         
         
