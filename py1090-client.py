@@ -1,17 +1,14 @@
-import socket
-import binascii
-import math
 
-clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-clientsocket.connect(('192.168.0.92', 30005))
-#clientsocket.connect(('192.168.0.92', 10001))
 
-while True:
+from twisted.internet import reactor, protocol
+
+
+def doThingsWithMessage(msg):
+    import math
     #Keep the parts of a message that haven't been used yet
     beastMsgString = str()
-    buf = clientsocket.recv(2048)
-    if len(buf) > 0:
-        beastMsgString += buf
+    if len(msg) > 0:
+        beastMsgString += msg
         
         #For reference: http://wiki.modesbeast.com/Mode-S_Beast:Data_Output_Formats :
         #<esc> "1" : 6 byte MLAT, 1 byte signal level, 2 byte Mode-AC
@@ -28,11 +25,11 @@ while True:
             start = beastMsgString.find(chr(0x1a))
         else:
             #Not a full message
-            continue
+            pass
         
         if beastMsgString[start+1] == chr(0x1a):
             #This is just an escaped "escape"
-            continue
+            pass
            
 
         beastMsgString = beastMsgString[start+1:]
@@ -48,10 +45,8 @@ while True:
         
         #Get the original message information. Assume that dump1090 has corrected any errors
         # and done minimal validation. i.e. Don't check here.
-        msgPlane = beastMsgString[9:]
-        
-        modesType = ord(msgPlane[0]) >> 3
-        
+        msgPlane = beastMsgString[9:]        
+        modesType = ord(msgPlane[0]) >> 3        
         
         #Address is always the last 24 bits of the message used as crc parity.
         #Except for #11, which had the raw address.
@@ -59,12 +54,39 @@ while True:
             addr = ord(msgPlane[1]) << 16 | ord(msgPlane[2]) << 8 | ord(msgPlane[3])
             
             print "Address: %s Signal: %d.1" % (hex(addr)[2:], rssi)
-            if hex(addr)[2:] == 0xa5106e:
-                print "Look"
-        
-        
-        
-        
-            
-            
-        
+
+
+class dumpClient(protocol.Protocol):
+    """Once connected, send a message, then print the result."""
+    
+    def dataReceived(self, data):
+        "Work with received messages."
+        doThingsWithMessage(data)
+
+class EchoFactory(protocol.ClientFactory):
+    protocol = dumpClient
+
+    def clientConnectionFailed(self, connector, reason):
+        reactor.stop()
+    
+    def clientConnectionLost(self, connector, reason):
+        reactor.stop()
+
+
+
+class Antenna():
+    """
+    Holds the details of the individual antenna being used.
+    """
+    
+    def __init__(self):
+        pass
+
+
+
+if __name__ == "__main__":
+    
+    f = EchoFactory()
+    reactor.connectTCP("192.168.0.92", 30005, f)
+    reactor.run()
+    
