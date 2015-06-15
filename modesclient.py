@@ -1,9 +1,9 @@
 
 
-from twisted.internet import reactor, protocol
 
 
-def doThingsWithMessage(msg):
+
+def parseBeastMessage(name, msg):
     import math
     #Keep the parts of a message that haven't been used yet
     beastMsgString = str()
@@ -53,40 +53,12 @@ def doThingsWithMessage(msg):
         if modesType == 11:
             addr = ord(msgPlane[1]) << 16 | ord(msgPlane[2]) << 8 | ord(msgPlane[3])
             
-            print "Address: %s Signal: %d.1" % (hex(addr)[2:], rssi)
-
-
-class dumpClient(protocol.Protocol):
-    """Once connected, send a message, then print the result."""
-    
-    def dataReceived(self, data):
-        "Work with received messages."
-        doThingsWithMessage(data)
-
-class EchoFactory(protocol.ClientFactory):
-    protocol = dumpClient
-
-    def clientConnectionFailed(self, connector, reason):
-        reactor.stop()
-    
-    def clientConnectionLost(self, connector, reason):
-        reactor.stop()
+            #print "Address: %s Signal: %.1f" % (hex(addr)[2:], rssi)
+            #print "Address: %x Signal: %.1f" % (addr, rssi)
+            return (name, addr, rssi)
 
 
 
-class Antenna():
-    """
-    Holds the details of the individual antenna being used.
-    """
-    
-    def __init__(self):
-        pass
 
 
-
-if __name__ == "__main__":
-    
-    f = EchoFactory()
-    reactor.connectTCP("192.168.0.92", 30005, f)
-    reactor.run()
     
