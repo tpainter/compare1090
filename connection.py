@@ -1,7 +1,7 @@
 from twisted.internet import reactor, protocol
 from twisted.internet.defer import Deferred
 import modesclient
-from displayHistory import receiveData
+from history import receiveData
 
 class ModesClient(protocol.Protocol):
     """Send received message to be analyzed."""
