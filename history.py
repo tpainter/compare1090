@@ -42,7 +42,7 @@ class History():
         f = connection.ModesFactory(self.name)
         self.connection = reactor.connectTCP("192.168.0.92", 30005, f)
         
-        reactor.callLater(5*60, self._cullResults)
+        reactor.callLater(1*60, self._cullResults)
         
     def addResult(self, time, addr, rssi):
         """
@@ -54,19 +54,22 @@ class History():
         else:
             self.signalHistory[addr] = [(time,rssi)]
             
-    def _cullResults(self, limit = 10*60):
+    def _cullResults(self, limit = 5*60):
         """
         Removes message history older than "limit" seconds.
         """
-        #print "cull"
-        #print self.signalHistory
+        
+        count = 0
         
         for k,v in self.signalHistory.iteritems():
             for i in v:
                 if i[0] < time.time() - limit:
                     self.signalHistory[k].remove(i)
+                    count += 1
                     
-        reactor.callLater(5*60, self._cullResults)
+        print("Culled: %d" % count)
+                    
+        reactor.callLater(1*60, self._cullResults)
         
     def returnHistory(self, limit = 10*60):
         """

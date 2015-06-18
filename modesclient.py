@@ -1,7 +1,7 @@
 
 
 
-
+#TODO Need to properly run through all of received data for multiple messages.
 
 def parseBeastMessage(name, msg):
     import math
@@ -25,11 +25,11 @@ def parseBeastMessage(name, msg):
             start = beastMsgString.find(chr(0x1a))
         else:
             #Not a full message
-            pass
+            return None
         
         if beastMsgString[start+1] == chr(0x1a):
             #This is just an escaped "escape"
-            pass
+            return None
            
 
         beastMsgString = beastMsgString[start+1:]
