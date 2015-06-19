@@ -1,5 +1,5 @@
-
-
+from twisted.internet import reactor
+from history import receiveData
 
 #TODO Need to properly run through all of received data for multiple messages.
 
@@ -24,11 +24,11 @@ def parseBeastMessage(name, msg):
             #Make sure that we start at the start of the message
             start = beastMsgString.find(chr(0x1a))
         else:
-            #Not a full message
+            #No message start found
             return None
         
         if beastMsgString[start+1] == chr(0x1a):
-            #This is just an escaped "escape"
+            #This is just an escaped "escape", return the rest of the string
             return None
            
 
@@ -53,8 +53,6 @@ def parseBeastMessage(name, msg):
         if modesType == 11:
             addr = ord(msgPlane[1]) << 16 | ord(msgPlane[2]) << 8 | ord(msgPlane[3])
             
-            #print "Address: %s Signal: %.1f" % (hex(addr)[2:], rssi)
-            #print "Address: %x Signal: %.1f" % (addr, rssi)
             return (name, addr, rssi)
 
 

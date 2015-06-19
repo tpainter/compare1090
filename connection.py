@@ -1,13 +1,13 @@
 from twisted.internet import reactor, protocol
-from twisted.internet.defer import Deferred
 import modesclient
 from history import receiveData
 
 class ModesClient(protocol.Protocol):
     """Send received message to be analyzed."""
-    
+        
     def dataReceived(self, data):
         d = modesclient.parseBeastMessage(self.factory.name, data)
+        #self.partialMsg = remain
         if d is not None:
             receiveData(d[0], d[1], d[2])
 
