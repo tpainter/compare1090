@@ -21,6 +21,10 @@ def parseBeastMessage(name, msg):
         
         start = beastMsgString.find(chr(0x1a))            
         
+        #Check that we have at least a few bytes after the deliminator
+        if len(beastMsgString) < start+2:
+            break
+            
         if beastMsgString[start+1] == chr(0x1a):
             #This is just an escaped "escape", return the rest of the string
             beastMsgString = beastMsgString[start+2:]
