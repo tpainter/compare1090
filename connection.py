@@ -6,12 +6,9 @@ class ModesClient(protocol.Protocol):
     """Send received message to be analyzed."""
         
     def dataReceived(self, data):
-        d = modesclient.parseBeastMessage(self.factory.name, data)
-        #self.partialMsg = remain
-        if d is not None:
-            receiveData(d[0], d[1], d[2])
+        modesclient.parseBeastMessage(self.factory.name, data)
 
-class ModesFactory(protocol.ClientFactory):
+class ModesFactory(protocol.ReconnectingClientFactory):
     protocol = ModesClient
     
     def __init__(self, name):
@@ -19,7 +16,9 @@ class ModesFactory(protocol.ClientFactory):
         self.name = name
 
     def clientConnectionFailed(self, connector, reason):
-        reactor.stop()
+        print("Connection lost. Reconnecting...")
+        protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
     
     def clientConnectionLost(self, connector, reason):
-        reactor.stop()
+        print("Connection lost. Reconnecting...")
+        protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
