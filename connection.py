@@ -1,6 +1,5 @@
 from twisted.internet import reactor, protocol
 import modesclient
-from history import receiveData
 
 class ModesClient(protocol.Protocol):
     """Send received message to be analyzed."""
@@ -14,6 +13,7 @@ class ModesFactory(protocol.ReconnectingClientFactory):
     def __init__(self, name):
         """Uses the passed name to help sort results later."""
         self.name = name
+        print("Connected to antenna: %s" % self.name)
 
     def clientConnectionFailed(self, connector, reason):
         print("Connection lost. Reconnecting...")

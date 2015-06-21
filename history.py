@@ -1,5 +1,5 @@
 
-
+import json
 import time
 from twisted.internet import reactor
 
@@ -12,7 +12,7 @@ def receiveData(name, icaoAddr, rssi):
     """
     histories[name].addResult(time.time(), icaoAddr, rssi)
     
-    print "Name: %s Address: %x Signal: %.1f" % (name, icaoAddr, rssi)
+    #print "Name: %s Address: %x Signal: %.1f" % (name, icaoAddr, rssi)
     
 
 
@@ -38,11 +38,16 @@ class History():
             histories[name] = self
         
         self.signalHistory = {}
+        self.msgCount = 0
+        #Number of minutes between printing number of messages received
+        self.resultsPeriod = 5
+        
         
         f = connection.ModesFactory(self.name)
         self.connection = reactor.connectTCP("192.168.0.92", 30005, f)
         
         reactor.callLater(1*60, self._cullResults)
+        reactor.callLater(self.resultsPeriod*60, self._periodicResults, self.resultsPeriod)
         
     def addResult(self, time, addr, rssi):
         """
@@ -53,6 +58,8 @@ class History():
             self.signalHistory[addr].append((time, rssi))
         else:
             self.signalHistory[addr] = [(time,rssi)]
+            
+        self.msgCount += 1
             
     def _cullResults(self, limit = 5*60):
         """
@@ -71,9 +78,18 @@ class History():
                     
         reactor.callLater(1*60, self._cullResults)
         
-    def returnHistory(self, limit = 10*60):
+    def _periodicResults(self, period):
         """
-        Returns all history more recent than limit seconds.
+        Print number of messages received in last "period" minutes.
         """
         
-        pass
+        print("%s: %d messages received in last %d minutes." % (self.name, self.msgCount, period))       
+        self.msgCount = 0        
+        reactor.callLater(self.resultsPeriod*60, self._periodicResults, self.resultsPeriod)
+        
+    def returnHistory(self):
+        """
+        Returns as json all history.
+        """
+        
+        return json.dumps({self.name: self.signalHistory}, separators=(',',':'))
