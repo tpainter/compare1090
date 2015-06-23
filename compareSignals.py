@@ -1,12 +1,11 @@
 if __name__ == "__main__":
     from twisted.internet import reactor
-    from history import History
-    
+    from history import History    
     
     #TODO get connection information from file
     #Lines of the file are: [Name] [IP] [PORT] 
     
-    connections = [["Main", "192.168.0.92", 30005, ],
+    connections = [["Main1", "192.168.0.92", 30005, ],
                    ["Main2", "192.168.0.92", 30005, ],
                                                         ]
     

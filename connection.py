@@ -16,9 +16,9 @@ class ModesFactory(protocol.ReconnectingClientFactory):
         print("Connected to antenna: %s" % self.name)
 
     def clientConnectionFailed(self, connector, reason):
-        print("Connection lost. Reconnecting...")
+        print("%s Connection lost. Reconnecting..." % self.name)
         protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
     
     def clientConnectionLost(self, connector, reason):
-        print("Connection lost. Reconnecting...")
+        print("%s Connection lost. Reconnecting..." % self.name)
         protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)

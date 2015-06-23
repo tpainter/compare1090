@@ -38,6 +38,7 @@ class History():
             histories[name] = self
         
         self.signalHistory = {}
+        self.msgReceivedTot = 0
         self.msgCount = 0
         #Number of minutes between printing number of messages received
         self.resultsPeriod = 5
@@ -46,8 +47,9 @@ class History():
         f = connection.ModesFactory(self.name)
         self.connection = reactor.connectTCP("192.168.0.92", 30005, f)
         
-        reactor.callLater(1*60, self._cullResults)
+        reactor.callLater(5*60, self._cullResults)
         reactor.callLater(self.resultsPeriod*60, self._periodicResults, self.resultsPeriod)
+        reactor.callLater(5*60, self._checkReceiving)
         
     def addResult(self, time, addr, rssi):
         """
@@ -59,6 +61,7 @@ class History():
         else:
             self.signalHistory[addr] = [(time,rssi)]
             
+        self.msgReceivedTot += 1
         self.msgCount += 1
             
     def _cullResults(self, limit = 5*60):
@@ -74,9 +77,9 @@ class History():
                     self.signalHistory[k].remove(i)
                     count += 1
                     
-        print("Culled: %d" % count)
+        #print("Culled: %d" % count)
                     
-        reactor.callLater(1*60, self._cullResults)
+        reactor.callLater(5*60, self._cullResults)
         
     def _periodicResults(self, period):
         """
@@ -87,9 +90,36 @@ class History():
         self.msgCount = 0        
         reactor.callLater(self.resultsPeriod*60, self._periodicResults, self.resultsPeriod)
         
-    def returnHistory(self):
+    def _checkReceiving(self, lastTot = 0):
+        """
+        Checks that message are being received. If not, restarts connection.
+        """
+        
+        if self.msgReceivedTot == lastTot:
+            #Have not received any new messages since last check
+            pass
+        
+        reactor.callLater(5*60, self._checkReceiving, self.msgReceivedTot)
+        
+    def returnHistoryJson(self):
         """
         Returns as json all history.
         """
         
         return json.dumps({self.name: self.signalHistory}, separators=(',',':'))
+    
+    def returnHistoryGoogle(self):
+        """
+        Returns as all history as array to use with Google Charts.
+        """
+        
+        #Google charts need full lines, dictionaries won't work.
+        #Columns are [antenna name], [plane address], [time], [rssi]
+        temp_array = []
+        
+        for k, v in self.signalHistory.iteritems():
+            #k is address, v is [(time, rssi)]
+            for i in v:
+                temp_array.append([self.name, "%x" % k, i[0], i[1] ])
+        
+        return json.dumps(temp_array, separators=(',',':'))
