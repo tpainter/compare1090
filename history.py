@@ -11,11 +11,6 @@ def receiveData(name, icaoAddr, rssi):
     Receives data address and signal strength data from clients. 
     """
     histories[name].addResult(time.time(), icaoAddr, rssi)
-    
-    #print "Name: %s Address: %x Signal: %.1f" % (name, icaoAddr, rssi)
-    
-
-
 
 class History():
     """
@@ -50,6 +45,7 @@ class History():
         reactor.callLater(5*60, self._cullResults)
         reactor.callLater(self.resultsPeriod*60, self._periodicResults, self.resultsPeriod)
         reactor.callLater(5*60, self._checkReceiving)
+        reactor.callLater(1*60, self.returnHistoryGoogle)
         
     def addResult(self, time, addr, rssi):
         """
@@ -122,4 +118,7 @@ class History():
             for i in v:
                 temp_array.append([self.name, "%x" % k, i[0], i[1] ])
         
-        return json.dumps(temp_array, separators=(',',':'))
+        #return json.dumps(temp_array, separators=(',',':'))
+        
+        with open('somefile.txt', 'a') as the_file:
+            the_file.write(json.dumps(temp_array, separators=(',',':')))
