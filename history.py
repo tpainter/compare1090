@@ -11,6 +11,66 @@ def receiveData(name, icaoAddr, rssi):
     Receives data address and signal strength data from clients. 
     """
     histories[name].addResult(time.time(), icaoAddr, rssi)
+    
+def allHistory():
+    """
+    Returns the history from all antennas as one big array.
+    """
+    
+    #Name of file to write history
+    historyfile = "somefile.txt"
+    
+    # Google charts needs data in following format:
+    # [x-axis],[Address],[Series1] ... [SeriesN]
+    # [time],[Address],[Antenna1] ... [AntennaN]
+    
+    temp_array = []
+    numAntennas = len(histories)
+    
+    #add headers to array
+    headers = ["Time", "Address"]
+    ###headers = []
+    ###columnType = {}
+    ###columnType['label'] = 'Time'
+    ###columnType['id'] = 'Time'
+    ###columnType['type'] = 'datetime'
+    ###headers.append(columnType)
+    ###headers.append("Address")
+    
+    for name in histories:
+        headers.append(name)
+        
+    temp_array.append(headers)
+    
+    i = 0
+    for name, hist in histories.iteritems():
+        a = hist.returnHistoryGoogle()
+        for b in a:
+            temp_list = []
+            
+            #add time and address
+            temp_list.append(b[0])
+            temp_list.append(b[1])
+            
+            #Pad columns to put rssi in proper location
+            for n in range(i):
+                temp_list.append(None)
+            temp_list.append(b[2])
+            
+            #Pad after the rssi to make all rows the same length
+            for j in range(numAntennas - i - 1):
+                temp_list.append(None)
+            
+            #Add row to array
+            temp_array.append(temp_list)
+        
+        i += 1
+        
+    with open(historyfile, 'w') as the_file:
+        the_file.write(json.dumps(temp_array, separators=(',',':')))
+        
+    print("History written to file: %s" % historyfile)
+    
 
 class History():
     """
@@ -116,9 +176,7 @@ class History():
         for k, v in self.signalHistory.iteritems():
             #k is address, v is [(time, rssi)]
             for i in v:
-                temp_array.append([self.name, "%x" % k, i[0], i[1] ])
+                #temp_array.append([self.name, "%x" % k, i[0], i[1] ])
+                temp_array.append([i[0],"%x" % k, round(i[1], 2) ])
         
-        #return json.dumps(temp_array, separators=(',',':'))
-        
-        with open('somefile.txt', 'a') as the_file:
-            the_file.write(json.dumps(temp_array, separators=(',',':')))
+        return temp_array

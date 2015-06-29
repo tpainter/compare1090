@@ -1,6 +1,7 @@
 if __name__ == "__main__":
     from twisted.internet import reactor
-    from history import History    
+    from history import History
+    from history import allHistory
     
     #TODO get connection information from file
     #Lines of the file are: [Name] [IP] [PORT] 
@@ -12,4 +13,5 @@ if __name__ == "__main__":
     for i in connections:
         History(i[0], i[1], i[2])
         
+    reactor.callLater(60, allHistory)
     reactor.run()
