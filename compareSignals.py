@@ -13,5 +13,6 @@ if __name__ == "__main__":
     for i in connections:
         History(i[0], i[1], i[2])
         
+    #Write first results after only 1 minute
     reactor.callLater(60, allHistory)
     reactor.run()

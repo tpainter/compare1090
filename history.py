@@ -18,7 +18,7 @@ def allHistory():
     """
     
     #Name of file to write history
-    historyfile = "somefile.txt"
+    historyfile = "resultsHistory.js"
     
     # Google charts needs data in following format:
     # [x-axis],[Address],[Series1] ... [SeriesN]
@@ -71,6 +71,9 @@ def allHistory():
         
     print("History written to file: %s" % historyfile)
     
+    #Every 10 minutes write a new file with results.
+    reactor.callLater(10*60, allHistory)
+    
 
 class History():
     """
@@ -102,10 +105,10 @@ class History():
         f = connection.ModesFactory(self.name)
         self.connection = reactor.connectTCP("192.168.0.92", 30005, f)
         
-        reactor.callLater(5*60, self._cullResults)
+        #Every hour remove results older than 24 hours
+        reactor.callLater(60*60, self._cullResults, 24*60*60)
         reactor.callLater(self.resultsPeriod*60, self._periodicResults, self.resultsPeriod)
         reactor.callLater(5*60, self._checkReceiving)
-        reactor.callLater(1*60, self.returnHistoryGoogle)
         
     def addResult(self, time, addr, rssi):
         """
@@ -120,9 +123,9 @@ class History():
         self.msgReceivedTot += 1
         self.msgCount += 1
             
-    def _cullResults(self, limit = 5*60):
+    def _cullResults(self, limit = 24*60*60):
         """
-        Removes message history older than "limit" seconds.
+        Removes message history older than "limit" seconds. Default 24 hours.
         """
         
         count = 0
@@ -133,9 +136,7 @@ class History():
                     self.signalHistory[k].remove(i)
                     count += 1
                     
-        #print("Culled: %d" % count)
-                    
-        reactor.callLater(5*60, self._cullResults)
+        reactor.callLater(60*60, self._cullResults)
         
     def _periodicResults(self, period):
         """
@@ -156,13 +157,6 @@ class History():
             pass
         
         reactor.callLater(5*60, self._checkReceiving, self.msgReceivedTot)
-        
-    def returnHistoryJson(self):
-        """
-        Returns as json all history.
-        """
-        
-        return json.dumps({self.name: self.signalHistory}, separators=(',',':'))
     
     def returnHistoryGoogle(self):
         """
