@@ -135,7 +135,8 @@ class History():
                 if i[0] < time.time() - limit:
                     self.signalHistory[k].remove(i)
                     count += 1
-                    
+        
+        print("$s removed %d old results." % (self.name, count))
         reactor.callLater(60*60, self._cullResults)
         
     def _periodicResults(self, period):
