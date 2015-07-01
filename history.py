@@ -1,6 +1,7 @@
 
 import json
 import time
+import datetime
 from twisted.internet import reactor
 
 #Store the names of the antennas to be able to sort the histories.
@@ -29,13 +30,13 @@ def allHistory():
     
     #add headers to array
     headers = ["Time", "Address"]
-    ###headers = []
-    ###columnType = {}
-    ###columnType['label'] = 'Time'
-    ###columnType['id'] = 'Time'
-    ###columnType['type'] = 'datetime'
-    ###headers.append(columnType)
-    ###headers.append("Address")
+    #headers = []
+    #columnType = {}
+    #columnType['label'] = 'Time'
+    #columnType['id'] = 'Time'
+    #columnType['type'] = 'datetime'
+    #headers.append(columnType)
+    #headers.append("Address")
     
     for name in histories:
         headers.append(name)
@@ -105,8 +106,8 @@ class History():
         f = connection.ModesFactory(self.name)
         self.connection = reactor.connectTCP("192.168.0.92", 30005, f)
         
-        #Every hour remove results older than 24 hours
-        reactor.callLater(60*60, self._cullResults, 24*60*60)
+        #Every hour remove results older than 4 hours
+        reactor.callLater(60*60, self._cullResults, 4*60*60)
         reactor.callLater(self.resultsPeriod*60, self._periodicResults, self.resultsPeriod)
         reactor.callLater(5*60, self._checkReceiving)
         
@@ -137,7 +138,7 @@ class History():
                     count += 1
         
         print("$s removed %d old results." % (self.name, count))
-        reactor.callLater(60*60, self._cullResults)
+        reactor.callLater(60*60, self._cullResults, limit)
         
     def _periodicResults(self, period):
         """
@@ -171,7 +172,7 @@ class History():
         for k, v in self.signalHistory.iteritems():
             #k is address, v is [(time, rssi)]
             for i in v:
-                #temp_array.append([self.name, "%x" % k, i[0], i[1] ])
+                #temp_array.append([datetime.datetime.utcfromtimestamp(i[0]).isoformat(),"%x" % k, round(i[1], 2) ])
                 temp_array.append([i[0],"%x" % k, round(i[1], 2) ])
         
         return temp_array
