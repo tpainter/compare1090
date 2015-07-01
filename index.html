@@ -1,5 +1,6 @@
 <html>
   <head>
+    <meta charset="UTF-8"> 
     <!--Load jquery-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <!--Load the AJAX API-->
@@ -37,17 +38,26 @@
           'controlType': 'CategoryFilter',
           'containerId': 'filter_div',
           'options': {
-            'filterColumnLabel': 'Address'
+            'filterColumnLabel': 'Address',
+            'ui.selectedValuesLayout': 'belowWrapping'
           }
         });
 
         // Create a chart, passing some options
         var scatterChart = new google.visualization.ChartWrapper({
-          'chartType': 'Scatter',
+          'chartType': 'ScatterChart', //Need to use "old" style of chart. material "Scatter" doesn't work with options below
           'containerId': 'chart_div',
           'options': {
-            'vAxis.maxValue': 0,
-            'vAxis.minValue': -30
+            'vAxis': {
+                'title': 'RSSI',
+                'viewWindow': {
+                    'max': 0,
+                    'min': -30
+                }
+            },
+            'hAxis': {
+                'title': 'Time'
+            }
           }
           
         });

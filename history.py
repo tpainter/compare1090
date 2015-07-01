@@ -104,7 +104,7 @@ class History():
         
         
         f = connection.ModesFactory(self.name)
-        self.connection = reactor.connectTCP("192.168.0.92", 30005, f)
+        self.connection = reactor.connectTCP(self.ip, self.port, f)
         
         #Every hour remove results older than 4 hours
         reactor.callLater(60*60, self._cullResults, 4*60*60)
