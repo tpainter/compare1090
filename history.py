@@ -106,8 +106,8 @@ class History():
         f = connection.ModesFactory(self.name)
         self.connection = reactor.connectTCP(self.ip, self.port, f)
         
-        #Every hour remove results older than 4 hours
-        reactor.callLater(60*60, self._cullResults, 4*60*60)
+        #Every hour remove old results
+        reactor.callLater(60*60, self._cullResults)
         reactor.callLater(self.resultsPeriod*60, self._periodicResults, self.resultsPeriod)
         reactor.callLater(5*60, self._checkReceiving)
         
@@ -124,9 +124,9 @@ class History():
         self.msgReceivedTot += 1
         self.msgCount += 1
             
-    def _cullResults(self, limit = 24*60*60):
+    def _cullResults(self, limit = 60*60):
         """
-        Removes message history older than "limit" seconds. Default 24 hours.
+        Removes message history older than "limit" seconds. Default 1 hour.
         """
         
         count = 0
